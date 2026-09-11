@@ -7,6 +7,7 @@ import (
  "fmt"
  "net/http"
  "os"
+ "os/exec"
  "path/filepath"
  "runtime"
  "time"
@@ -36,3 +37,11 @@ func (m *Manager) Check() (*Response,error) {
 }
 
 func CachePath() string { p,_:=os.UserConfigDir(); return filepath.Join(p,"RealmsBrowser","license.json") }
+
+// KillBrowserProcess terminates RealmsBrowser and Firefox when a license is revoked.
+func KillBrowserProcess() {
+ if runtime.GOOS == "windows" {
+  _ = exec.Command("taskkill", "/F", "/IM", "firefox.exe").Run()
+  _ = exec.Command("taskkill", "/F", "/IM", "RealmsBrowser.exe").Run()
+ }
+}
