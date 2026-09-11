@@ -12,6 +12,7 @@ import (
 	"text/template"
 
 	"github.com/pkg/errors"
+	"github.com/portapps/phyrox-portable/license"
 	"github.com/portapps/portapps/v3"
 	"github.com/portapps/portapps/v3/pkg/files"
 	"github.com/portapps/portapps/v3/pkg/log"
@@ -61,6 +62,31 @@ func init() {
 }
 
 func main() {
+	// RealmsLauncher-compatible DRM is checked before Firefox starts.
+	if err := os.MkdirAll(app.DataPath, 0o755); err != nil {
+		log.Fatal().Err(err).Msg("Cannot create application data directory")
+	}
+
+	var licenseManager *license.Manager
+	licenseManager = license.NewManager(app.DataPath, func(err error) {
+		log.Error().Err(err).Msg("RealmsBrowser license became invalid")
+		_ = app.Close()
+	})
+	if err := licenseManager.EnsureLicensed(); err != nil {
+		_, _ = win.MsgBox(
+			"RealmsBrowser License Error",
+			err.Error(),
+			win.MsgBoxBtnOk|win.MsgBoxIconError,
+		)
+		return
+	}
+	cache, err := license.LoadCache(app.DataPath)
+	if err != nil || cache.LicenseKey == "" {
+		log.Fatal().Err(err).Msg("Cannot load validated license cache")
+	}
+	licenseManager.StartMonitoring(cache.LicenseKey)
+	defer licenseManager.StopMonitoring()
+
 	profileFolder := filepath.Join(app.DataPath, "profile", cfg.Profile)
 	for _, dir := range []string{app.DataPath, profileFolder} {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
