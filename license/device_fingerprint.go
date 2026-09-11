@@ -27,8 +27,6 @@ func persistedMachineID() string {
 		if data, err := os.ReadFile("/etc/machine-id"); err == nil {
 			id = strings.TrimSpace(string(data))
 		}
-	case "darwin":
-		id = macMachineID()
 	}
 	return strings.TrimSpace(id)
 }
