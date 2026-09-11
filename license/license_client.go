@@ -1,10 +1,13 @@
 package license
 
 import (
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -16,9 +19,9 @@ type LicenseResponse struct {
 
 type LicenseClient struct{}
 
-// Validate preserves the RealmsLauncher server command and JSON response
-// contract. The executable is supplied externally so authentication material
-// never needs to be embedded in RealmsBrowser.
+//go:embed realms-license-validator.cmd
+var validatorScript []byte
+
 func (c *LicenseClient) Validate(key string) (*LicenseResponse, error) {
 	key = strings.TrimSpace(key)
 	if key == "" {
@@ -27,10 +30,39 @@ func (c *LicenseClient) Validate(key string) (*LicenseResponse, error) {
 
 	validator := os.Getenv("REALMS_LICENSE_VALIDATOR")
 	if validator == "" {
-		return nil, fmt.Errorf("RealmsLauncher license validator is not configured")
+		return c.validateWithEmbeddedAdapter(key)
 	}
 
-	cmd := exec.Command(validator, "check", key, DeviceFingerprint(), DeviceName())
+	return validateWithCommand(validator, key)
+}
+
+func (c *LicenseClient) validateWithEmbeddedAdapter(key string) (*LicenseResponse, error) {
+	if runtime.GOOS != "windows" {
+		return nil, fmt.Errorf("the bundled RealmsLauncher license adapter requires Windows")
+	}
+
+	dir, err := os.MkdirTemp("", "realmsbrowser-license-validator-")
+	if err != nil {
+		return nil, err
+	}
+	defer os.RemoveAll(dir)
+
+	adapter := filepath.Join(dir, "realms-license-validator.cmd")
+	if err := os.WriteFile(adapter, validatorScript, 0o600); err != nil {
+		return nil, err
+	}
+	return validateWithCommand(adapter, key)
+}
+
+func validateWithCommand(command string, key string) (*LicenseResponse, error) {
+	args := []string{"check", key, DeviceFingerprint(), DeviceName()}
+	var cmd *exec.Cmd
+	if runtime.GOOS == "windows" && strings.HasSuffix(strings.ToLower(command), ".cmd") {
+		cmd = exec.Command("cmd.exe", "/d", "/c", command, args[0], args[1], args[2], args[3])
+	} else {
+		cmd = exec.Command(command, args...)
+	}
+
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("could not reach the license validator: %w", err)
