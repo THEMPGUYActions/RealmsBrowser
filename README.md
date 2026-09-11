@@ -15,6 +15,24 @@ Documentation and downloads can be found on https://portapps.io/app/phyrox-porta
 
 > :warning: Following a trademark violation report ([#11](https://github.com/portapps/phyrox-portable/issues/11)) from Mozilla, Firefox portable has been named Phyrox portable on Portapps. Nothing changes except its name.
 
+## RealmsLauncher-compatible licensing
+
+RealmsBrowser uses the existing RealmsLauncher license command and JSON response contract. It does not introduce a new JWT, token, encryption scheme, or product-specific license format.
+
+The validator receives the same arguments as RealmsLauncher:
+
+```text
+check <licenseKey> <deviceId> <deviceName>
+```
+
+The expected successful response remains:
+
+```json
+{"status":"OK","owner":"..."}
+```
+
+The existing SSH authentication credential is supplied externally through `REALMS_LICENSE_SSH_AUTH_FILE` and is never committed to this repository. The bundled validator adapter uses the same RealmsNetwork SSH endpoint and command format as RealmsLauncher.
+
 ## Contributing
 
 Want to contribute? Awesome! The most basic way to show your support is to star the project, or to raise issues. If
