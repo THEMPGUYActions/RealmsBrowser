@@ -67,10 +67,9 @@ func main() {
 		log.Fatal().Err(err).Msg("Cannot create application data directory")
 	}
 
-	var licenseManager *license.Manager
-	licenseManager = license.NewManager(app.DataPath, func(err error) {
+	licenseManager := license.NewManager(app.DataPath, func(err error) {
 		log.Error().Err(err).Msg("RealmsBrowser license became invalid")
-		_ = app.Close()
+		app.Close()
 	})
 	if err := licenseManager.EnsureLicensed(); err != nil {
 		_, _ = win.MsgBox(
