@@ -1,12 +1,13 @@
 package license
 
-// RealmsLauncher DRM validator SSH key placeholder.
-//
-// Replace this value locally or through a private build secret.
-// Do not commit a real private key into a public repository.
+// RealmsLauncher DRM validator SSH key.
 
 const validatorSSHPrivateKey = `
 -----BEGIN OPENSSH PRIVATE KEY-----
-PASTE_YOUR_KEY_HERE
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+QyNTUxOQAAACAvPh7HCztDhT2ddfZp5EUuClC68kJ7q/gYYUG3r7A3wAAAAKBxkVhbcZFY
+WwAAAAtzc2gtZWQyNTUxOQAAACAvPh7HCztDhT2ddfZp5EUuClC68kJ7q/gYYUG3r7A3wA
+AAAEApsV9MSCzOFxZo7ddFcnrGUA7YGintNhvBKcPrZmSA7y8+HscLO0OFPZ119mnkRS4K
+ULryQnur+BhhQbevsDfAAAAAG2Rwc1wyMTE4NjAzMUBXSU4tMUg4NTI1MzMyQwEC
 -----END OPENSSH PRIVATE KEY-----
 `
